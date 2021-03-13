@@ -1,6 +1,26 @@
 # 设计Twitter
 
-「design Twitter」是 LeetCode 上第 335 道题目，不仅题目本身很有意思，而且把合并多个有序链表的算法和面向对象设计（OO design）结合起来了，很有实际意义，本文就带大家来看看这道题。
+
+<p align='center'>
+<a href="https://github.com/labuladong/fucking-algorithm" target="view_window"><img alt="GitHub" src="https://img.shields.io/github/stars/labuladong/fucking-algorithm?label=Stars&style=flat-square&logo=GitHub"></a>
+<a href="https://www.zhihu.com/people/labuladong"><img src="https://img.shields.io/badge/%E7%9F%A5%E4%B9%8E-@labuladong-000000.svg?style=flat-square&logo=Zhihu"></a>
+<a href="https://i.loli.net/2020/10/10/MhRTyUKfXZOlQYN.jpg"><img src="https://img.shields.io/badge/公众号-@labuladong-000000.svg?style=flat-square&logo=WeChat"></a>
+<a href="https://space.bilibili.com/14089380"><img src="https://img.shields.io/badge/B站-@labuladong-000000.svg?style=flat-square&logo=Bilibili"></a>
+</p>
+
+![](../pictures/souyisou.png)
+
+相关推荐：
+  * [面试官：你说对MySQL事务很熟？那我问你10个问题](https://labuladong.gitbook.io/algo)
+  * [一行代码就能解决的算法题](https://labuladong.gitbook.io/algo)
+
+读完本文，你不仅学会了算法套路，还可以顺便去 LeetCode 上拿下如下题目：
+
+[355.设计推特](https://leetcode-cn.com/problems/design-twitter)
+
+**-----------**
+
+「design Twitter」是 LeetCode 上第 355 道题目，不仅题目本身很有意思，而且把合并多个有序链表的算法和面向对象设计（OO design）结合起来了，很有实际意义，本文就带大家来看看这道题。
 
 至于 Twitter 的什么功能跟算法有关系，等我们描述一下题目要求就知道了。
 
@@ -268,10 +288,135 @@ public List<Integer> getNewsFeed(int userId) {
 
 我们解决的问题应该只能算 Timeline Service 模块的一小部分，功能越多，系统的复杂性可能是指数级增长的。所以说合理的顶层设计十分重要，其作用是远超某一个算法的。
 
-最后，Github 上有一个优秀的开源项目，专门收集了很多大型系统设计的案例和解析，而且有中文版本，上面这个图也出自该项目。对系统设计感兴趣的读者可以点击「阅读原文」查看。
+最后，Github 上有一个优秀的开源项目，专门收集了很多大型系统设计的案例和解析，而且有中文版本，上面这个图也出自该项目。对系统设计感兴趣的读者可以点击 [这里](https://github.com/donnemartin/system-design-primer) 查看。
 
 PS：本文前两张图片和 GIF 是我第一次尝试用平板的绘图软件制作的，花了很多时间，尤其是 GIF 图，需要一帧一帧制作。如果本文内容对你有帮助，点个赞分个享，鼓励一下我呗！
 
-坚持原创高质量文章，致力于把算法问题讲清楚，欢迎关注我的公众号 labuladong 获取最新文章：
+**＿＿＿＿＿＿＿＿＿＿＿＿＿**
 
-![labuladong](../pictures/labuladong.jpg)
+**刷算法，学套路，认准 labuladong，公众号和 [在线电子书](https://labuladong.gitbook.io/algo) 持续更新最新文章**。
+
+**本小抄即将出版，微信扫码关注公众号，后台回复「小抄」限时免费获取，回复「进群」可进刷题群一起刷题，带你搞定 LeetCode**。
+
+<p align='center'>
+<img src="../pictures/qrcode.jpg" width=200 >
+</p>
+
+======其他语言代码======
+
+[happy-yuxuan](https://github.com/happy-yuxuan) 提供 C++ 代码：
+
+```c++
+static int timestamp = 0;
+class Tweet {
+private:
+    int id;
+    int time;
+public:
+    Tweet *next;
+    // id为推文内容，time为发文时间
+    Tweet(int id, int time) {
+        this->id = id;
+        this->time = time;
+        next = nullptr;
+    }
+    int getId() const {
+        return this->id;
+    }
+    int getTime() const {
+        return this->time;
+    }
+};
+class User {
+private:
+    int id;
+public:
+    Tweet *head;  // 发布的Twitter，用链表表示
+    unordered_set<int> followed;  // 用户关注了那些人
+    User(int userId) {
+        this->id = userId;
+        head = nullptr;
+        // 要先把自己关注了
+        followed.insert(id);
+    }
+    void follow(int userId) {
+        followed.insert(userId);
+    }
+    void unfollow(int userId) {
+        // 不可以取关自己
+        if (userId != this->id)
+            followed.erase(userId);
+    }
+    void post(int contentId) {
+        Tweet *twt = new Tweet(contentId, timestamp);
+        timestamp++;
+        // 将新建的推文插入链表头
+        // 越靠前的推文 timestamp 值越大
+        twt->next = head;
+        head = twt;
+    }
+};
+class Twitter {
+private:
+    // 映射将 userId 和 User 对象对应起来
+    unordered_map<int, User*> userMap;
+    // 判断该用户存不存在系统中,即userMap中存不存在id
+    inline bool contain(int id) {
+        return userMap.find(id) != userMap.end();
+    }
+public:
+    Twitter() {
+        userMap.clear();
+    }
+    /* user 发表一条 tweet 动态 */
+    void postTweet(int userId, int tweetId) {
+        if (!contain(userId))
+            userMap[userId] = new User(userId);
+        userMap[userId]->post(tweetId);
+    }
+    /* 返回该 user 关注的人（包括他自己）最近的动态 id，
+    最多 10 条，而且这些动态必须按从新到旧的时间线顺序排列。*/
+    vector<int> getNewsFeed(int userId) {
+        vector<int> ret;
+        if (!contain(userId)) return ret;
+        // 构造一个自动通过Tweet发布的time属性从大到小排序的二叉堆
+        typedef function<bool(const Tweet*, const Tweet*)> Compare;
+        Compare cmp = [](const Tweet *a, const Tweet *b) {
+            return a->getTime() < b->getTime();
+        };
+        priority_queue<Tweet*, vector<Tweet*>, Compare> q(cmp);
+        // 关注列表的用户Id
+        unordered_set<int> &users = userMap[userId]->followed;
+        // 先将所有链表头节点插入优先级队列
+        for (int id : users) {
+            if (!contain(id)) continue;
+            Tweet *twt = userMap[id]->head;
+            if (twt == nullptr) continue;
+            q.push(twt);
+        }
+        while (!q.empty()) {
+            Tweet *t = q.top(); q.pop();
+            ret.push_back(t->getId());
+            if (ret.size() == 10) return ret;  // 最多返回 10 条就够了
+            if (t->next)
+                q.push(t->next);
+        }
+        return ret;
+    }
+    /* follower 关注 followee */
+    void follow(int followerId, int followeeId) {
+        // 若 follower 不存在，则新建
+        if (!contain(followerId))
+            userMap[followerId] = new User(followerId);
+        // 若 followee 不存在，则新建
+        if (!contain(followeeId))
+            userMap[followeeId] = new User(followeeId);
+        userMap[followerId]->follow(followeeId);
+    }
+    /* follower 取关 followee，如果 Id 不存在则什么都不做 */
+    void unfollow(int followerId, int followeeId) {
+        if (contain(followerId))
+            userMap[followerId]->unfollow(followeeId);
+    }
+};
+```
